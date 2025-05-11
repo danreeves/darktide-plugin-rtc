@@ -94,7 +94,7 @@ extern "C" fn connect(l: *mut lua_State) -> i32 {
             callbacks.insert(channel.clone(), on_peer_disconnected_callback);
         }
 
-        let url = format!("wss://rtc-darkti-de.onrender.com/{}", channel);
+        let url = format!("wss://rtc.darkti.de/{}", channel);
         plugin.log.info(PLUGIN_NAME, format!("Connecting to {url}"));
 
         plugin.tokio_runtime.spawn(async move {
