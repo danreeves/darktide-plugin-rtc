@@ -1,0 +1,7 @@
+.envrc
+/target
+/msvc
+/tools/xwin
+/.xwin-cache
+/.wineprefix
+/target
