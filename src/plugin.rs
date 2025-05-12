@@ -3,6 +3,7 @@ use crate::{MODULE_NAME, PLUGIN, PLUGIN_NAME};
 use futures::{FutureExt, select};
 use matchbox_socket::{PeerId, PeerState, WebRtcSocket};
 use std::collections::HashMap;
+use std::env;
 use std::sync::Arc;
 use std::time::Duration;
 use tokio::sync::Mutex;
@@ -258,12 +259,22 @@ impl Plugin {
     }
 
     pub fn setup_game(&self) {
-        self.log.info(PLUGIN_NAME, "Initializing");
+        let version = env!("CARGO_PKG_VERSION");
+        let build_date = env!("BUILD_DATE");
+        let git_version = env!("GIT_VERSION");
+        let rustc_version = env!("RUSTC_VERSION");
+        self.log.info(
+            PLUGIN_NAME,
+            format!(
+                "Setting up v{version} ({git_version}) built on {build_date} using {rustc_version}"
+            ),
+        );
         self.lua
             .add_module_function(MODULE_NAME, "connect", connect);
         self.lua.add_module_function(MODULE_NAME, "send", send);
         self.lua
             .add_module_function(MODULE_NAME, "disconnect", disconnect);
+        self.lua.set_module_string(MODULE_NAME, "version", version);
     }
 
     pub fn shutdown_game(&self) {

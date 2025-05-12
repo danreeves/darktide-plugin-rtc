@@ -161,6 +161,8 @@ impl std::fmt::Display for LuaType {
 
 pub struct LuaApi {
     add_module_function: unsafe extern "C" fn(*const c_char, *const c_char, lua_CFunction),
+    set_module_number: unsafe extern "C" fn(*const c_char, *const c_char, f64),
+    set_module_string: unsafe extern "C" fn(*const c_char, *const c_char, *const c_char),
     tolstring: unsafe extern "C" fn(*mut lua_State, i32, *mut usize) -> *const c_char,
     pushstring: unsafe extern "C" fn(*mut lua_State, *const c_char),
     pushboolean: unsafe extern "C" fn(*mut lua_State, i32),
@@ -183,6 +185,8 @@ impl LuaApi {
         unsafe {
             Self {
                 add_module_function: (*api).add_module_function.unwrap_unchecked(),
+                set_module_number: (*api).set_module_number.unwrap_unchecked(),
+                set_module_string: (*api).set_module_string.unwrap_unchecked(),
                 tolstring: (*api).tolstring.unwrap_unchecked(),
                 pushstring: (*api).pushstring.unwrap_unchecked(),
                 pushboolean: (*api).pushboolean.unwrap_unchecked(),
@@ -207,6 +211,31 @@ impl LuaApi {
         let name = CString::new(name).expect("Invalid CString");
 
         unsafe { (self.add_module_function)(module.as_ptr(), name.as_ptr(), Some(cb)) }
+    }
+
+    pub fn set_module_number(
+        &self,
+        module: impl Into<Vec<u8>>,
+        name: impl Into<Vec<u8>>,
+        value: f64,
+    ) {
+        let module = CString::new(module).expect("Invalid CString");
+        let name = CString::new(name).expect("Invalid CString");
+
+        unsafe { (self.set_module_number)(module.as_ptr(), name.as_ptr(), value) }
+    }
+
+    pub fn set_module_string(
+        &self,
+        module: impl Into<Vec<u8>>,
+        name: impl Into<Vec<u8>>,
+        value: impl Into<Vec<u8>>,
+    ) {
+        let module = CString::new(module).expect("Invalid CString");
+        let name = CString::new(name).expect("Invalid CString");
+        let value = CString::new(value).expect("Invalid CString");
+
+        unsafe { (self.set_module_string)(module.as_ptr(), name.as_ptr(), value.as_ptr()) }
     }
 
     pub fn tolstring(&self, L: *mut lua_State, idx: i32) -> Option<&CStr> {
